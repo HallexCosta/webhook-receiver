@@ -43,6 +43,9 @@ export function EndpointCard({
           <span className={`badge ${endpoint.active ? 'badge-active' : 'badge-inactive'}`}>
             {endpoint.active ? 'Ativo' : 'Inativo'}
           </span>
+          {endpoint.forwardUrl && (
+            <span className="badge badge-forward">Forwarding</span>
+          )}
         </div>
         <div className="card-url" onClick={(e) => e.stopPropagation()}>
           <code>{webhookUrl}</code>

@@ -15,22 +15,26 @@ export function EndpointDetail({
   const [endpoint, setEndpoint] = useState<Endpoint | null>(null);
   const [loading, setLoading] = useState(true);
   const [copied, setCopied] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState('');
+  const [forwardInput, setForwardInput] = useState('');
   const [, navigate] = useLocation();
 
   const load = useCallback(async () => {
     try {
       const data = await api.getEndpoint(request, id);
       setEndpoint(data.endpoint);
+      if (!editing) setForwardInput(data.endpoint.forwardUrl || '');
     } catch {
       navigate('/');
     } finally {
       setLoading(false);
     }
-  }, [request, id, navigate]);
+  }, [request, id, navigate, editing]);
 
   useEffect(() => {
     load();
-    const interval = setInterval(load, 3000);
+    const interval = setInterval(load, 5000);
     return () => clearInterval(interval);
   }, [load]);
 
@@ -44,7 +48,7 @@ export function EndpointDetail({
   const handleToggle = async () => {
     if (!endpoint) return;
     const data = await api.toggleEndpoint(request, id, !endpoint.active);
-    setEndpoint(data.endpoint);
+    setEndpoint((prev) => prev ? { ...prev, active: data.endpoint.active } : prev);
   };
 
   const handleDelete = async () => {
@@ -59,6 +63,18 @@ export function EndpointDetail({
     setEndpoint((prev) => (prev ? { ...prev, calls: [] } : prev));
   };
 
+  const handleRename = async () => {
+    if (!editName.trim()) return;
+    const data = await api.renameEndpoint(request, id, editName.trim());
+    setEndpoint((prev) => prev ? { ...prev, name: data.endpoint.name } : prev);
+    setEditing(false);
+  };
+
+  const handleForwardSave = async () => {
+    await api.setForwardUrl(request, id, forwardInput.trim());
+    setEndpoint((prev) => prev ? { ...prev, forwardUrl: forwardInput.trim() } : prev);
+  };
+
   if (loading || !endpoint) {
     return <div className="loading">Carregando...</div>;
   }
@@ -71,18 +87,68 @@ export function EndpointDetail({
         <a className="back-link" href="/" onClick={(e) => { e.preventDefault(); navigate('/'); }}>
           ← Voltar
         </a>
+
         <div className="detail-title-row">
-          <span className="detail-title">{endpoint.name}</span>
+          {editing ? (
+            <div className="inline-edit">
+              <input
+                className="inline-edit-input"
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleRename()}
+                autoFocus
+              />
+              <button className="btn btn-small btn-primary" onClick={handleRename}>Salvar</button>
+              <button className="btn btn-small btn-ghost" onClick={() => setEditing(false)}>Cancelar</button>
+            </div>
+          ) : (
+            <span
+              className="detail-title detail-title-editable"
+              onClick={() => { setEditName(endpoint.name); setEditing(true); }}
+              title="Clique para renomear"
+            >
+              {endpoint.name}
+            </span>
+          )}
           <span className={`badge ${endpoint.active ? 'badge-active' : 'badge-inactive'}`}>
             {endpoint.active ? 'Ativo' : 'Inativo'}
           </span>
         </div>
+
         <div className="detail-url-row">
           <code className="detail-url">{webhookUrl}</code>
           <button className="btn btn-primary btn-small" onClick={handleCopy}>
             {copied ? 'Copiado!' : 'Copiar URL'}
           </button>
         </div>
+
+        <div className="forward-section">
+          <label className="forward-label">Encaminhar para:</label>
+          <div className="forward-row">
+            <input
+              className="input forward-input"
+              placeholder="https://exemplo.com/webhook"
+              value={forwardInput}
+              onChange={(e) => setForwardInput(e.target.value)}
+            />
+            <button
+              className="btn btn-small btn-primary"
+              onClick={handleForwardSave}
+              disabled={forwardInput === (endpoint.forwardUrl || '')}
+            >
+              Salvar
+            </button>
+            {endpoint.forwardUrl && (
+              <button
+                className="btn btn-small btn-ghost"
+                onClick={() => { setForwardInput(''); api.setForwardUrl(request, id, '').then(() => setEndpoint((p) => p ? { ...p, forwardUrl: '' } : p)); }}
+              >
+                Remover
+              </button>
+            )}
+          </div>
+        </div>
+
         <div className="detail-controls">
           <button
             className={`btn btn-small ${endpoint.active ? 'btn-warning' : 'btn-success'}`}
@@ -97,9 +163,10 @@ export function EndpointDetail({
             Deletar
           </button>
         </div>
+
         <div className="detail-info">
           <span>Criado {timeAgo(endpoint.createdAt)}</span>
-          <span>{endpoint.calls.length} chamadas</span>
+          <span>{endpoint.calls.length}/25 chamadas</span>
         </div>
       </div>
 
@@ -121,10 +188,6 @@ export function EndpointDetail({
           ))}
         </div>
       )}
-
-      <div className="memory-notice">
-        Dados armazenados em memoria — serao perdidos ao reiniciar o servidor
-      </div>
     </div>
   );
 }

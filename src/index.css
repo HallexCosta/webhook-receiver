@@ -48,6 +48,17 @@ body {
 .logo {
   font-size: 16px;
   font-weight: 600;
+  color: var(--text);
+  text-decoration: none;
+}
+
+.header-badge {
+  font-size: 11px;
+  color: var(--text-muted);
+  background: var(--bg);
+  padding: 3px 10px;
+  border-radius: 100px;
+  border: 1px solid var(--border);
 }
 
 /* Container */
@@ -55,34 +66,6 @@ body {
   max-width: 960px;
   margin: 0 auto;
   padding: 24px 20px;
-}
-
-/* Login */
-.login-page {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-}
-
-.login-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 32px;
-  width: 100%;
-  max-width: 360px;
-}
-
-.login-title {
-  font-size: 20px;
-  margin-bottom: 4px;
-}
-
-.login-subtitle {
-  color: var(--text-muted);
-  font-size: 14px;
-  margin-bottom: 20px;
 }
 
 /* Forms */
@@ -184,6 +167,17 @@ body {
 
 .list-header h2 {
   font-size: 18px;
+  margin-bottom: 2px;
+}
+
+.limit-badge {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.btn-disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 
 .endpoint-grid {
@@ -284,6 +278,23 @@ body {
   color: var(--text-muted);
 }
 
+.badge-forward {
+  background: rgba(139, 92, 246, 0.15);
+  color: #a78bfa;
+}
+
+.badge-forward-ok {
+  background: rgba(34, 197, 94, 0.15);
+  color: var(--success);
+  font-size: 10px;
+}
+
+.badge-forward-fail {
+  background: rgba(239, 68, 68, 0.15);
+  color: var(--danger);
+  font-size: 10px;
+}
+
 /* Detail */
 .detail-header {
   margin-bottom: 24px;
@@ -311,6 +322,89 @@ body {
 .detail-title {
   font-size: 20px;
   font-weight: 600;
+}
+
+.detail-title-editable {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--border);
+}
+
+.detail-title-editable:hover {
+  border-color: var(--primary);
+}
+
+/* Inline Edit */
+.inline-edit {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline-edit-input {
+  font-size: 20px;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--primary);
+  border-radius: 6px;
+  color: var(--text);
+  padding: 4px 8px;
+  outline: none;
+}
+
+/* Forward Section */
+.forward-section {
+  margin-bottom: 16px;
+}
+
+.forward-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  display: block;
+  margin-bottom: 6px;
+}
+
+.forward-row {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.forward-input {
+  flex: 1;
+  margin-bottom: 0;
+  font-family: var(--mono);
+  font-size: 12px;
+}
+
+/* Forwarding Result */
+.forwarding-result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: var(--mono);
+  font-size: 12px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  flex-wrap: wrap;
+}
+
+.forwarding-success {
+  background: rgba(34, 197, 94, 0.1);
+  color: var(--success);
+}
+
+.forwarding-fail {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--danger);
+}
+
+.forwarding-status {
+  font-weight: 700;
+}
+
+.forwarding-error {
+  font-size: 11px;
+  opacity: 0.8;
 }
 
 .detail-url-row {
@@ -499,15 +593,6 @@ body {
   padding: 40px;
 }
 
-/* Memory notice */
-.memory-notice {
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 12px;
-  padding: 16px;
-  border-top: 1px solid var(--border);
-  margin-top: 40px;
-}
 
 /* Responsive */
 @media (max-width: 640px) {

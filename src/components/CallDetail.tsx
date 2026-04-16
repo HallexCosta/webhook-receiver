@@ -26,6 +26,11 @@ export function CallDetail({ call }: { call: WebhookCall }) {
         {call.contentType && (
           <span className="call-content-type">{call.contentType}</span>
         )}
+        {call.forwarding && (
+          <span className={`badge ${call.forwarding.success ? 'badge-forward-ok' : 'badge-forward-fail'}`}>
+            → {call.forwarding.success ? call.forwarding.status : 'FALHA'} ({call.forwarding.duration}ms)
+          </span>
+        )}
         {call.ip && (
           <span className="call-content-type">{call.ip}</span>
         )}
@@ -67,6 +72,21 @@ export function CallDetail({ call }: { call: WebhookCall }) {
                   ))}
                 </tbody>
               </table>
+            </div>
+          )}
+          {call.forwarding && (
+            <div className="call-section">
+              <div className="call-section-title">Encaminhamento</div>
+              <div className={`forwarding-result ${call.forwarding.success ? 'forwarding-success' : 'forwarding-fail'}`}>
+                <span className="forwarding-status">
+                  {call.forwarding.success ? `${call.forwarding.status} OK` : 'FALHA'}
+                </span>
+                <span>→ {call.forwarding.url}</span>
+                <span>{call.forwarding.duration}ms</span>
+                {call.forwarding.error && (
+                  <span className="forwarding-error">{call.forwarding.error}</span>
+                )}
+              </div>
             </div>
           )}
         </div>

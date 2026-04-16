@@ -1,3 +1,11 @@
+export interface ForwardingResult {
+  url: string;
+  status: number;
+  duration: number;
+  success: boolean;
+  error?: string;
+}
+
 export interface WebhookCall {
   id: string;
   method: string;
@@ -7,6 +15,7 @@ export interface WebhookCall {
   contentType: string | null;
   ip: string | null;
   timestamp: number;
+  forwarding?: ForwardingResult;
 }
 
 export interface Endpoint {
@@ -14,6 +23,7 @@ export interface Endpoint {
   name: string;
   active: boolean;
   createdAt: number;
+  forwardUrl?: string;
   calls: WebhookCall[];
 }
 
@@ -23,4 +33,12 @@ export interface EndpointSummary {
   active: boolean;
   createdAt: number;
   callCount: number;
+  forwardUrl?: string;
+}
+
+export interface SessionLimits {
+  endpointsUsed: number;
+  endpointsMax: number;
+  callsMaxPerEndpoint: number;
+  retentionHours: number;
 }
