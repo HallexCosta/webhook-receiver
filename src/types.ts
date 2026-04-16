@@ -43,3 +43,14 @@ export interface SessionLimits {
   callsMaxPerEndpoint: number;
   retentionHours: number;
 }
+
+export interface User {
+  email: string;
+  tier: 'freemium' | 'paid';
+  createdAt: number;
+  limits: {
+    maxEndpoints: number;
+    maxCalls: number;
+    ttl: number;
+  };
+}

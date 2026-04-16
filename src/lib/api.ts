@@ -1,6 +1,41 @@
-import type { Endpoint, EndpointSummary, SessionLimits } from '../types';
+import type { Endpoint, EndpointSummary, SessionLimits, User } from '../types';
 
 type RequestFn = <T = unknown>(path: string, options?: RequestInit) => Promise<T>;
+
+// --- Auth (raw fetch, no token needed) ---
+
+export const register = (email: string) =>
+  fetch('/api/auth/register', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ email }),
+  }).then(async (res) => {
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar');
+    return data as { passphrase: string; passphraseFormatted: string; isNew: boolean };
+  });
+
+export const login = (passphrase: string) =>
+  fetch('/api/auth/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ passphrase }),
+  }).then(async (res) => {
+    const data = await res.json();
+    if (res.status === 429) throw new Error(data.error || 'Rate limited');
+    if (!res.ok) throw new Error(data.error || 'Passphrase invalida');
+    return data as { ok: boolean; email: string; tier: string; passphrase: string };
+  });
+
+export const getMe = (token: string) =>
+  fetch('/api/auth/me', {
+    headers: { Authorization: `Bearer ${token}` },
+  }).then(async (res) => {
+    if (!res.ok) throw new Error('Unauthorized');
+    return res.json() as Promise<User>;
+  });
+
+// --- Endpoints (authenticated) ---
 
 export const listEndpoints = (request: RequestFn) =>
   request<{ endpoints: EndpointSummary[]; limits: SessionLimits }>('/endpoints');

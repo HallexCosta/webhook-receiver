@@ -1,34 +1,76 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Route, Switch } from 'wouter';
-import { nanoid } from 'nanoid';
 import { useApi } from './hooks/useApi';
+import * as api from './lib/api';
+import type { User } from './types';
 import { Layout } from './components/Layout';
+import { AuthPage } from './components/AuthPage';
+import { FaqPage } from './components/FaqPage';
 import { EndpointList } from './components/EndpointList';
 import { EndpointDetail } from './components/EndpointDetail';
 
-function getSessionToken(): string {
-  let token = localStorage.getItem('wh_session_token');
-  if (!token) {
-    token = nanoid(21);
-    localStorage.setItem('wh_session_token', token);
-  }
-  return token;
-}
-
 export function App() {
-  const [token] = useState(getSessionToken);
-  const { request } = useApi(token);
+  const [passphrase, setPassphrase] = useState<string | null>(
+    () => localStorage.getItem('wh_passphrase'),
+  );
+  const [user, setUser] = useState<User | null>(null);
+  const [checking, setChecking] = useState(true);
+  const { request } = useApi(passphrase || '');
 
+  useEffect(() => {
+    if (!passphrase) {
+      setChecking(false);
+      return;
+    }
+    api.getMe(passphrase)
+      .then((data) => { setUser(data); setChecking(false); })
+      .catch(() => {
+        localStorage.removeItem('wh_passphrase');
+        setPassphrase(null);
+        setChecking(false);
+      });
+  }, [passphrase]);
+
+  const handleAuth = (newPassphrase: string) => {
+    setPassphrase(newPassphrase);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem('wh_passphrase');
+    setPassphrase(null);
+    setUser(null);
+  };
+
+  // FAQ is always accessible
   return (
-    <Layout>
-      <Switch>
-        <Route path="/">
-          <EndpointList request={request} />
-        </Route>
-        <Route path="/endpoints/:id">
-          {(params) => <EndpointDetail id={params.id} request={request} />}
-        </Route>
-      </Switch>
-    </Layout>
+    <Switch>
+      <Route path="/faq">
+        <FaqPage />
+      </Route>
+      <Route>
+        {() => {
+          if (checking) {
+            return <div className="loading">Carregando...</div>;
+          }
+
+          if (!passphrase || !user) {
+            return <AuthPage onAuth={handleAuth} />;
+          }
+
+          return (
+            <Layout user={user} onLogout={handleLogout}>
+              <Switch>
+                <Route path="/">
+                  <EndpointList request={request} />
+                </Route>
+                <Route path="/endpoints/:id">
+                  {(params) => <EndpointDetail id={params.id} request={request} />}
+                </Route>
+              </Switch>
+            </Layout>
+          );
+        }}
+      </Route>
+    </Switch>
   );
 }

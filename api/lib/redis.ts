@@ -56,6 +56,8 @@ const redis = new Redis({
   token: process.env.UPSTASH_REDIS_REST_TOKEN!,
 });
 
+export { redis };
+
 // --- Session Helpers ---
 
 export async function getSessionEndpointCount(sessionToken: string): Promise<number> {
@@ -68,9 +70,15 @@ export async function getSessionEndpointIds(sessionToken: string): Promise<strin
 
 // --- Endpoint CRUD ---
 
-export async function createEndpoint(sessionToken: string): Promise<EndpointData> {
+export async function createEndpoint(
+  sessionToken: string,
+  limits?: { maxEndpoints?: number; ttl?: number },
+): Promise<EndpointData> {
+  const maxEp = limits?.maxEndpoints ?? MAX_ENDPOINTS;
+  const ttl = limits?.ttl ?? TTL;
+
   const count = await getSessionEndpointCount(sessionToken);
-  if (count >= MAX_ENDPOINTS) {
+  if (count >= maxEp) {
     throw new Error('LIMIT_REACHED');
   }
 
@@ -87,9 +95,13 @@ export async function createEndpoint(sessionToken: string): Promise<EndpointData
   const p = redis.pipeline();
   p.hset(`endpoint:${id}`, endpoint);
   p.sadd(`session:${sessionToken}:endpoints`, id);
-  p.set(`endpoint_session:${id}`, sessionToken, { ex: TTL });
-  p.expire(`endpoint:${id}`, TTL);
-  p.expire(`session:${sessionToken}:endpoints`, TTL);
+  if (ttl > 0) {
+    p.set(`endpoint_session:${id}`, sessionToken, { ex: ttl });
+    p.expire(`endpoint:${id}`, ttl);
+    p.expire(`session:${sessionToken}:endpoints`, ttl);
+  } else {
+    p.set(`endpoint_session:${id}`, sessionToken);
+  }
   await p.exec();
 
   return endpoint;
@@ -149,12 +161,21 @@ export async function isOwnedBySession(endpointId: string, sessionToken: string)
 
 // --- Calls ---
 
-export async function addCall(endpointId: string, call: WebhookCall): Promise<void> {
+export async function addCall(
+  endpointId: string,
+  call: WebhookCall,
+  limits?: { maxCalls?: number; ttl?: number },
+): Promise<void> {
+  const maxCalls = limits?.maxCalls ?? MAX_CALLS;
+  const ttl = limits?.ttl ?? TTL;
+
   const p = redis.pipeline();
   p.lpush(`endpoint:${endpointId}:calls`, JSON.stringify(call));
-  p.ltrim(`endpoint:${endpointId}:calls`, 0, MAX_CALLS - 1);
-  p.expire(`endpoint:${endpointId}:calls`, TTL);
-  p.expire(`endpoint:${endpointId}`, TTL);
+  p.ltrim(`endpoint:${endpointId}:calls`, 0, maxCalls - 1);
+  if (ttl > 0) {
+    p.expire(`endpoint:${endpointId}:calls`, ttl);
+    p.expire(`endpoint:${endpointId}`, ttl);
+  }
   await p.exec();
 }
 
