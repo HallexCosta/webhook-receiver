@@ -26,13 +26,16 @@ export function CallDetail({ call }: { call: WebhookCall }) {
         {call.contentType && (
           <span className="call-content-type">{call.contentType}</span>
         )}
+        {call.source && (
+          <span className="call-source">{call.source}</span>
+        )}
         {call.forwarding && (
           <span className={`badge ${call.forwarding.success ? 'badge-forward-ok' : 'badge-forward-fail'}`}>
             → {call.forwarding.success ? call.forwarding.status : 'FALHA'} ({call.forwarding.duration}ms)
           </span>
         )}
         {call.ip && (
-          <span className="call-content-type">{call.ip}</span>
+          <span className="call-ip">{call.ip}</span>
         )}
         <span className="call-time">{timeAgo(call.timestamp)}</span>
       </div>

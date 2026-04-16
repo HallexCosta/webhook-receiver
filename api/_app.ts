@@ -93,6 +93,21 @@ app.all('/w/:id', async (c) => {
     }
   }
 
+  // Extract source domain from headers
+  let source: string | null = null;
+  const origin = c.req.header('origin');
+  const referer = c.req.header('referer');
+  const userAgent = c.req.header('user-agent') || '';
+  if (origin) {
+    try { source = new URL(origin).hostname; } catch { source = origin; }
+  } else if (referer) {
+    try { source = new URL(referer).hostname; } catch { source = referer; }
+  } else if (userAgent && !userAgent.startsWith('curl') && !userAgent.startsWith('node')) {
+    // Known webhook providers identify via user-agent
+    const match = userAgent.match(/^([A-Za-z0-9_-]+)/);
+    if (match) source = match[1];
+  }
+
   const call: WebhookCall = {
     id: nanoid(12),
     method: c.req.method,
@@ -101,6 +116,7 @@ app.all('/w/:id', async (c) => {
     query: c.req.query(),
     contentType: c.req.header('content-type') || null,
     ip: c.req.header('x-forwarded-for') || c.req.header('x-real-ip') || null,
+    source,
     timestamp: Date.now(),
     ...(forwarding ? { forwarding } : {}),
   };

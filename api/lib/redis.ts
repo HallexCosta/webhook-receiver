@@ -11,6 +11,7 @@ export interface WebhookCall {
   query: Record<string, string>;
   contentType: string | null;
   ip: string | null;
+  source: string | null;
   timestamp: number;
   forwarding?: ForwardingResult;
 }
