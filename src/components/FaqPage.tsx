@@ -25,10 +25,10 @@ export function FaqPage() {
             <li><strong>Sem anuncios</strong> invasivos</li>
           </ul>
           <div className="faq-notice">
-            <strong>Importante:</strong> Usuarios do plano gratuito estao sujeitos a "spots" —
-            isso significa que se precisarmos derrubar a aplicacao, atualizar com deploys,
-            reiniciar ou limpar os dados, estamos autorizados a faze-lo. Em contrapartida,
-            voce pode usar a plataforma totalmente de graca, sem anuncios invasivos.
+            <strong>Bom saber:</strong> Como o plano gratuito roda em infraestrutura compartilhada,
+            seus dados podem ser resetados eventualmente — por exemplo, durante atualizacoes
+            ou manutencoes na plataforma. Nada de mais: e so criar novos endpoints quando precisar.
+            Em troca, voce tem acesso completo a ferramenta, sem pagar nada e sem anuncios chatos.
           </div>
         </section>
 
