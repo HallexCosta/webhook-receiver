@@ -33,7 +33,11 @@ const MAX_CALLS = 100;
 // --- App ---
 
 const app = new Hono().basePath('/api');
-app.use('/*', cors());
+app.use('/*', cors({
+  origin: '*',
+  allowMethods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'HEAD', 'OPTIONS'],
+  allowHeaders: ['*'],
+}));
 
 const AUTH_PASSWORD = process.env.AUTH_PASSWORD || 'changeme';
 const auth = bearerAuth({ token: AUTH_PASSWORD });
