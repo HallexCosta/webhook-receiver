@@ -12,7 +12,11 @@ export const register = (email: string) =>
   }).then(async (res) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || 'Erro ao cadastrar');
-    return data as { passphrase: string; passphraseFormatted: string; isNew: boolean };
+    return data as {
+      passphrase?: string;
+      passphraseFormatted?: string;
+      message: string;
+    };
   });
 
 export const login = (passphrase: string) =>

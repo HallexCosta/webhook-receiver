@@ -192,6 +192,23 @@ body {
   color: var(--primary);
 }
 
+.register-message {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.register-message-text {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 8px;
+}
+
+.register-message-hint {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 16px;
+}
+
 /* FAQ Page */
 .faq-page {
   min-height: 100vh;

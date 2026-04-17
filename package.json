@@ -16,6 +16,7 @@
     "nanoid": "^5.1.5",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
+    "resend": "^6.12.0",
     "wouter": "^3.7.3"
   },
   "devDependencies": {

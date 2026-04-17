@@ -67,10 +67,22 @@ app.post('/auth/register', async (c) => {
     return c.json({ error: 'Email invalido' }, 400);
   }
   const result = await registerUser(email);
+
+  if (result.emailAlreadyExists) {
+    // Send notification email in background — don't await to keep response fast
+    import('./lib/email.js').then(({ sendExistingAccountEmail }) =>
+      sendExistingAccountEmail(email.toLowerCase().trim()),
+    );
+    // Return same shape as success — attacker can't tell if email exists
+    return c.json({
+      message: 'Verifique seu email para continuar.',
+    });
+  }
+
   return c.json({
     passphrase: result.passphrase,
-    passphraseFormatted: formatPassphrase(result.passphrase),
-    isNew: result.isNew,
+    passphraseFormatted: formatPassphrase(result.passphrase!),
+    message: 'Conta criada! Salve sua passphrase.',
   });
 });
 

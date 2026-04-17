@@ -6,6 +6,7 @@ export function AuthPage({ onAuth }: { onAuth: (passphrase: string) => void }) {
   const [email, setEmail] = useState('');
   const [passphrase, setPassphrase] = useState('');
   const [generatedPassphrase, setGeneratedPassphrase] = useState('');
+  const [registerMessage, setRegisterMessage] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -13,12 +14,16 @@ export function AuthPage({ onAuth }: { onAuth: (passphrase: string) => void }) {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setRegisterMessage('');
     setLoading(true);
     try {
       const data = await api.register(email);
-      setGeneratedPassphrase(data.passphraseFormatted);
-      if (!data.isNew) {
-        setError('Email ja cadastrado. Sua passphrase foi recuperada.');
+      if (data.passphrase && data.passphraseFormatted) {
+        // New account — show passphrase
+        setGeneratedPassphrase(data.passphraseFormatted);
+      } else {
+        // Email already exists — show generic message (email sent in background)
+        setRegisterMessage(data.message);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Erro ao cadastrar');
@@ -64,19 +69,34 @@ export function AuthPage({ onAuth }: { onAuth: (passphrase: string) => void }) {
         <div className="auth-tabs">
           <button
             className={`auth-tab ${mode === 'login' ? 'auth-tab-active' : ''}`}
-            onClick={() => { setMode('login'); setError(''); setGeneratedPassphrase(''); }}
+            onClick={() => { setMode('login'); setError(''); setGeneratedPassphrase(''); setRegisterMessage(''); }}
           >
             Entrar
           </button>
           <button
             className={`auth-tab ${mode === 'register' ? 'auth-tab-active' : ''}`}
-            onClick={() => { setMode('register'); setError(''); }}
+            onClick={() => { setMode('register'); setError(''); setRegisterMessage(''); }}
           >
             Cadastrar
           </button>
         </div>
 
-        {mode === 'register' && !generatedPassphrase && (
+        {mode === 'register' && registerMessage && (
+          <div className="register-message">
+            <p className="register-message-text">{registerMessage}</p>
+            <p className="register-message-hint">
+              Se voce ja tem uma conta, use sua passphrase para entrar.
+            </p>
+            <button
+              className="btn btn-primary btn-full"
+              onClick={() => { setMode('login'); setRegisterMessage(''); }}
+            >
+              Ir para login
+            </button>
+          </div>
+        )}
+
+        {mode === 'register' && !generatedPassphrase && !registerMessage && (
           <form onSubmit={handleRegister}>
             <input
               type="email"

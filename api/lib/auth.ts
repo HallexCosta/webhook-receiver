@@ -45,15 +45,16 @@ export interface UserData {
 }
 
 export async function registerUser(email: string): Promise<{
-  passphrase: string;
-  isNew: boolean;
+  passphrase: string | null;
+  emailAlreadyExists: boolean;
 }> {
   const normalized = email.toLowerCase().trim();
 
   // Check if email already registered
   const existing = await redis.get(`email:${normalized}`) as string | null;
   if (existing) {
-    return { passphrase: existing, isNew: false };
+    // Don't return passphrase — send notification email instead
+    return { passphrase: null, emailAlreadyExists: true };
   }
 
   // Generate passphrase and store
@@ -68,7 +69,7 @@ export async function registerUser(email: string): Promise<{
   } satisfies UserData);
   await p.exec();
 
-  return { passphrase, isNew: true };
+  return { passphrase, emailAlreadyExists: false };
 }
 
 // --- Login ---
